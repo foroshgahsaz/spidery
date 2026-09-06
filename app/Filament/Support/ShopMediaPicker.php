@@ -2,14 +2,14 @@
 
 namespace App\Filament\Support;
 
-use Filament\Forms\Components\FileUpload;
+use App\Filament\Forms\Components\MediaPicker;
 
 class ShopMediaPicker
 {
-    public static function image(string $name, string $directory, string $label): FileUpload
+    public static function image(string $name, string $directory, string $label): MediaPicker
     {
-        return FileUpload::make($name)
-            ->view('filament.forms.components.shop-image-upload')
+        return MediaPicker::make($name)
+            ->view('filament.forms.components.media-picker')
             ->label($label)
             ->image()
             ->disk('public')
@@ -17,7 +17,7 @@ class ShopMediaPicker
             ->visibility('public')
             ->maxSize(51200)
             ->imagePreviewHeight('150')
-            ->helperText('فایل را انتخاب کنید، تا پایان نوار پیشرفت صبر کنید، بعد ذخیره کنید.')
+            ->helperText('روی «انتخاب / تغییر تصویر» بزنید — از مرکز فایل انتخاب کنید یا فایل جدید بارگذاری کنید.')
             ->validationMessages([
                 'required' => 'انتخاب تصویر الزامی است.',
                 'uploaded' => 'فایل آپلود نشد. دوباره انتخاب کنید و تا پایان آپلود صبر کنید.',

@@ -63,6 +63,16 @@ class MediaFileResource extends Resource
                     ->searchable()
                     ->copyable()
                     ->limit(40),
+                Tables\Columns\TextColumn::make('title')
+                    ->label('عنوان SEO')
+                    ->toggleable()
+                    ->limit(24)
+                    ->placeholder('—'),
+                Tables\Columns\TextColumn::make('alt_text')
+                    ->label('Alt')
+                    ->toggleable()
+                    ->limit(24)
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('dimensions')
                     ->label('ابعاد')
                     ->state(fn (MediaFile $record): string => $record->dimensionsLabel()),
