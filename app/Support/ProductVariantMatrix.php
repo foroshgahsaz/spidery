@@ -30,7 +30,7 @@ class ProductVariantMatrix
 
         $variants = $product->variants->map(function (ProductVariant $variant) use ($product) {
             $mainImage = $product->images->first()
-                ? asset('storage/'.$product->images->first()->image)
+                ? ShopMedia::url($product->images->first()->image)
                 : null;
 
             return [
@@ -42,7 +42,7 @@ class ProductVariantMatrix
                     : null,
                 'stock' => (int) $variant->stock,
                 'image' => $variant->image
-                    ? asset('storage/'.$variant->image)
+                    ? ShopMedia::url($variant->image)
                     : $mainImage,
                 'valueIds' => $variant->attributeValues->pluck('id')->map(fn ($id) => (int) $id)->sort()->values()->all(),
             ];

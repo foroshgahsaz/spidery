@@ -87,19 +87,19 @@ class SeoPresenter
     protected static function resolveImage(Model $model): ?string
     {
         if (! empty($model->og_image)) {
-            return asset('storage/'.$model->og_image);
+            return ShopMedia::url($model->og_image);
         }
 
         if (method_exists($model, 'images') && $model->relationLoaded('images') && $model->images->isNotEmpty()) {
-            return asset('storage/'.$model->images->first()->path);
+            return ShopMedia::url($model->images->first()->path);
         }
 
         if (! empty($model->image)) {
-            return asset('storage/'.$model->image);
+            return ShopMedia::url($model->image);
         }
 
         if (! empty($model->featured_image)) {
-            return asset('storage/'.$model->featured_image);
+            return ShopMedia::url($model->featured_image);
         }
 
         return null;

@@ -13,7 +13,7 @@
             @foreach($posts as $post)
                 <article class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <a href="{{ route('blog.show', $post) }}">
-                        <img src="{{ $post->image ? asset('storage/'.$post->image) : asset('shop/images/blog/article-1.svg') }}"
+                        <img src="{{ $post->image ? \App\Support\ShopMedia::url($post->image) : asset('shop/images/blog/article-1.svg') }}"
                              alt="{{ $post->title }}"
                              class="w-full h-44 object-cover"
                              loading="lazy">

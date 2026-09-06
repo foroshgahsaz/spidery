@@ -23,6 +23,22 @@ use App\Livewire\Cart\CartPage;
 use App\Livewire\Checkout\CheckoutPage;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/data/{path}', function (string $path) {
+    $path = ltrim($path, '/');
+
+    if ($path === '' || str_contains($path, '..')) {
+        abort(404);
+    }
+
+    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+    if (! $disk->exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($disk->path($path));
+})->where('path', '.*')->name('filesystem.public');
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');

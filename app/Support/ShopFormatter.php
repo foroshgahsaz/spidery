@@ -60,13 +60,21 @@ class ShopFormatter
         }
 
         $relative = ltrim($path, '/');
-        $fullPath = storage_path('app/public/'.$relative);
+        $disk = Storage::disk('public');
 
-        if (! is_file($fullPath) || filesize($fullPath) < 512) {
+        if (! $disk->exists($relative)) {
             return null;
         }
 
-        return asset('storage/'.$relative);
+        try {
+            if ($disk->size($relative) < 512) {
+                return null;
+            }
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return ShopMedia::url($relative);
     }
 
     public static function categoryImage(?string $path): string
@@ -75,8 +83,6 @@ class ShopFormatter
             return asset('shop/images/categories/code.svg');
         }
 
-        return Str::startsWith($path, ['http://', 'https://'])
-            ? $path
-            : asset('storage/'.$path);
+        return ShopMedia::url($path) ?? asset('shop/images/categories/code.svg');
     }
 }

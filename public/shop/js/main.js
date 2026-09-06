@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   initHeaderMetrics();
+  initMobileBottomNavMetrics();
   initMegaMenu();
   initMainSwiper();
   initProductSwipers();
@@ -24,6 +25,25 @@ function initHeaderMetrics() {
   if (typeof ResizeObserver !== 'undefined') {
     const observer = new ResizeObserver(sync);
     observer.observe(header);
+  }
+
+  window.addEventListener('resize', sync);
+}
+
+function initMobileBottomNavMetrics() {
+  const nav = document.querySelector('.mobile-bottom-nav');
+  if (!nav) return;
+
+  const sync = () => {
+    const height = nav.offsetHeight;
+    document.documentElement.style.setProperty('--mobile-bottom-nav-height', `${height}px`);
+  };
+
+  sync();
+
+  if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(sync);
+    observer.observe(nav);
   }
 
   window.addEventListener('resize', sync);

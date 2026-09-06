@@ -20,7 +20,7 @@
     @endif
     @stack('meta')
     @if (! empty($siteSettings['favicon']))
-        <link rel="icon" href="{{ asset('storage/'.$siteSettings['favicon']) }}">
+        <link rel="icon" href="{{ \App\Support\ShopMedia::url($siteSettings['favicon']) }}">
     @endif
     <link rel="preload" href="{{ asset('fonts/yekan/fonts.css') }}" as="style">
     <link rel="stylesheet" href="{{ asset('fonts/yekan/fonts.css') }}">
@@ -42,7 +42,7 @@
     @stack('styles')
     @livewireStyles
 </head>
-<body class="bg-white min-h-screen font-yekan text-gray-800 @if(auth()->check() && auth()->user()->isAdmin()) has-admin-bar @endif @yield('body_class')">
+<body class="bg-white min-h-screen font-yekan text-gray-800 has-mobile-bottom-nav @if(auth()->check() && auth()->user()->isAdmin()) has-admin-bar @endif @yield('body_class')">
 
     @if(auth()->check() && auth()->user()->isAdmin())
         @include('shop.partials.admin-bar')
@@ -64,6 +64,8 @@
 
     @include('shop.partials.footer')
     </div>
+
+    @include('shop.partials.mobile-bottom-nav')
 
     @include('shop.partials.overlays')
     @include('shop.partials.mobile-menu')

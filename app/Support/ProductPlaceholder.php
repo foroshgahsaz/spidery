@@ -2,33 +2,37 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Facades\Storage;
+
 class ProductPlaceholder
 {
     public static function ensure(string $relativePath, string $label = ''): void
     {
-        $fullPath = storage_path('app/public/'.$relativePath);
+        $disk = Storage::disk('public');
 
-        if (is_file($fullPath) && filesize($fullPath) >= 512) {
-            return;
+        if ($disk->exists($relativePath)) {
+            try {
+                if ($disk->size($relativePath) >= 512) {
+                    return;
+                }
+            } catch (\Throwable) {
+                // Continue and replace invalid placeholder.
+            }
+
+            $disk->delete($relativePath);
         }
 
-        if (is_file($fullPath)) {
-            @unlink($fullPath);
-        }
-
-        $directory = dirname($fullPath);
-
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
+        $disk->makeDirectory(dirname($relativePath));
 
         $template = self::findValidTemplate();
 
         if ($template) {
-            copy($template, $fullPath);
+            $disk->put($relativePath, file_get_contents($template));
 
             return;
         }
+
+        $fullPath = $disk->path($relativePath);
 
         if (function_exists('imagecreatetruecolor')) {
             self::writeWithGd($fullPath, $label);
@@ -36,20 +40,28 @@ class ProductPlaceholder
             return;
         }
 
-        file_put_contents($fullPath, self::minimalJpeg());
+        $disk->put($relativePath, self::minimalJpeg());
     }
 
     protected static function findValidTemplate(): ?string
     {
-        $directory = storage_path('app/public/products');
+        $disk = Storage::disk('public');
 
-        if (! is_dir($directory)) {
+        if (! $disk->exists('products')) {
             return null;
         }
 
-        foreach (glob($directory.'/*.{jpg,jpeg,webp,png}', GLOB_BRACE) ?: [] as $file) {
-            if (is_file($file) && filesize($file) > 5000) {
-                return $file;
+        foreach ($disk->files('products') as $file) {
+            if (! preg_match('/\.(jpe?g|webp|png)$/i', $file)) {
+                continue;
+            }
+
+            try {
+                if ($disk->size($file) > 5000) {
+                    return $disk->path($file);
+                }
+            } catch (\Throwable) {
+                continue;
             }
         }
 

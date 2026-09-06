@@ -20,7 +20,7 @@
                                 ? $slider->image
                                 : (str_starts_with($slider->image, 'shop/')
                                     ? asset($slider->image)
-                                    : asset('storage/'.$slider->image));
+                                    : \App\Support\ShopMedia::url($slider->image));
                         @endphp
                         @if($slider->link)
                             <a href="{{ $slider->link }}" class="hero-slide__link">
@@ -162,7 +162,7 @@
                                 <article class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                                     <a href="{{ route('blog.show', $post) }}">
                                         <div class="relative">
-                                            <img src="{{ $post->image ? asset('storage/'.$post->image) : asset('shop/images/blog/article-1.svg') }}" alt="{{ $post->title }}" class="w-full h-40 object-cover" loading="lazy">
+                                            <img src="{{ $post->image ? \App\Support\ShopMedia::url($post->image) : asset('shop/images/blog/article-1.svg') }}" alt="{{ $post->title }}" class="w-full h-40 object-cover" loading="lazy">
                                         </div>
                                     </a>
                                     <div class="p-4">

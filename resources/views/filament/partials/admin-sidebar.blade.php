@@ -1,6 +1,7 @@
 @php
     use App\Filament\Pages\ManageGeneralSettings;
     use App\Filament\Pages\ManageIntegrations;
+    use App\Filament\Pages\ManageMediaPresets;
     use App\Filament\Pages\ManageTara;
     use App\Filament\Pages\ManageZarinpal;
     use App\Filament\Resources\AttributeResource;
@@ -8,6 +9,7 @@
     use App\Filament\Resources\CategoryResource;
     use App\Filament\Resources\CouponResource;
     use App\Filament\Resources\HomeSliderResource;
+    use App\Filament\Resources\MediaFileResource;
     use App\Filament\Resources\MenuItemResource;
     use App\Filament\Resources\OrderResource;
     use App\Filament\Resources\PageResource;
@@ -158,6 +160,22 @@
                 ]],
             ],
         ],
+        'media' => [
+            'label' => 'مدیریت فایل',
+            'icon' => 'fa-folder-open',
+            'routes' => [
+                'filament.admin.resources.media-files.*',
+                'filament.admin.pages.media-presets',
+            ],
+            'menus' => [
+                ['label' => 'کتابخانه رسانه', 'icon' => 'fa-photo-film', 'items' => [
+                    ['label' => 'همه فایل‌ها', 'url' => MediaFileResource::getUrl('index'), 'icon' => 'fa-images'],
+                ]],
+                ['label' => 'تنظیمات تصویر', 'icon' => 'fa-crop', 'items' => [
+                    ['label' => 'سایز و تامبنیل', 'url' => ManageMediaPresets::getUrl(), 'icon' => 'fa-sliders'],
+                ]],
+            ],
+        ],
         'settings' => [
             'label' => 'تنظیمات',
             'icon' => 'fa-cog',
@@ -204,6 +222,7 @@
         ['id' => 'content', 'icon' => 'fa-newspaper', 'tooltip' => 'محتوا', 'panel' => 'content'],
         ['id' => 'shipping', 'icon' => 'fa-truck', 'tooltip' => 'ارسال', 'panel' => 'shipping'],
         ['id' => 'gateways', 'icon' => 'fa-plug', 'tooltip' => 'درگاه‌ها', 'panel' => 'gateways'],
+        ['id' => 'media', 'icon' => 'fa-folder-open', 'tooltip' => 'مدیریت فایل', 'panel' => 'media'],
         ['id' => 'settings', 'icon' => 'fa-cog', 'tooltip' => 'تنظیمات', 'panel' => 'settings'],
     ];
 

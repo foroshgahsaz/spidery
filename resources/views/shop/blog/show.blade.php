@@ -27,7 +27,7 @@
     </header>
 
     @if($post->image)
-        <img src="{{ asset('storage/'.$post->image) }}" alt="{{ $post->title }}" class="w-full max-h-[420px] object-cover rounded-2xl mb-8">
+        <img src="{{ \App\Support\ShopMedia::url($post->image) }}" alt="{{ $post->title }}" class="w-full max-h-[420px] object-cover rounded-2xl mb-8">
     @endif
 
     <x-shop.rich-content :content="$post->content" />

@@ -8,6 +8,8 @@ use Livewire\Component;
 
 class CartCounter extends Component
 {
+    public string $variant = 'header';
+
     public int $count = 0;
 
     public function mount(CartService $cart): void

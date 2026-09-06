@@ -40,8 +40,8 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'root' => env('FILESYSTEM_PUBLIC_ROOT', storage_path('app/public')),
+            'url' => env('FILESYSTEM_PUBLIC_URL', rtrim(env('APP_URL', 'http://localhost'), '/').'/storage'),
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -49,9 +49,22 @@ return [
 
         'livewire-tmp' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/livewire-tmp'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage/livewire-tmp',
+            'root' => env(
+                'LIVEWIRE_TEMP_ROOT',
+                env('FILESYSTEM_PUBLIC_ROOT', storage_path('app/public'))
+            ),
+            'url' => env(
+                'LIVEWIRE_TEMP_URL',
+                rtrim(env('FILESYSTEM_PUBLIC_URL', rtrim(env('APP_URL', 'http://localhost'), '/').'/storage'), '/').'/livewire-tmp'
+            ),
             'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'tmp-for-tests' => [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/disks/tmp-for-tests'),
             'throw' => false,
             'report' => false,
         ],

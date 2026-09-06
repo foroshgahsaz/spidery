@@ -3,6 +3,8 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Support\CrudSuccessNotification;
+use App\Filament\Support\FileUploadSanitizer;
+use App\Services\Media\MediaRegistry;
 use App\Services\Settings\SettingsService;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -105,21 +107,30 @@ class ManageGeneralSettings extends Page implements HasForms
             ->statePath('data');
     }
 
-    public function save(SettingsService $settings): void
+    public function save(SettingsService $settings, MediaRegistry $media): void
     {
+        FileUploadSanitizer::sanitize($this, $this->form);
+
         $data = $this->form->getState();
+
+        $logo = is_array($data['logo'] ?? null) ? ($data['logo'][0] ?? '') : ($data['logo'] ?? '');
+        $favicon = is_array($data['favicon'] ?? null) ? ($data['favicon'][0] ?? '') : ($data['favicon'] ?? '');
 
         $settings->setMany('site', [
             'name' => $data['name'] ?? '',
             'description' => $data['description'] ?? '',
-            'logo' => is_array($data['logo'] ?? null) ? ($data['logo'][0] ?? '') : ($data['logo'] ?? ''),
-            'favicon' => is_array($data['favicon'] ?? null) ? ($data['favicon'][0] ?? '') : ($data['favicon'] ?? ''),
+            'logo' => $logo,
+            'favicon' => $favicon,
             'phone' => $data['phone'] ?? '',
             'email' => $data['email'] ?? '',
             'address' => $data['address'] ?? '',
             'instagram' => $data['instagram'] ?? '',
             'telegram' => $data['telegram'] ?? '',
         ]);
+
+        foreach (array_filter(['logo' => $logo, 'favicon' => $favicon]) as $path) {
+            $media->registerFromPath('public', $path);
+        }
 
         CrudSuccessNotification::saved()
             ->title('ذخیره شد')
