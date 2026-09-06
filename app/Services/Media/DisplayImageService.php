@@ -87,7 +87,7 @@ class DisplayImageService
         $hash = hash('sha256', $section.'|'.$path.'|'.json_encode($preset));
         $format = (string) ($preset['format'] ?? 'webp');
 
-        return '.thumbs/'.$section.'/'.substr($hash, 0, 40).'.'.$format;
+        return 'thumbs/'.$section.'/'.substr($hash, 0, 40).'.'.$format;
     }
 
     /** @param  array<string, mixed>  $preset */

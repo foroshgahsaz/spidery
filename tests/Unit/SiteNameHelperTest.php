@@ -26,6 +26,18 @@ class SiteNameHelperTest extends TestCase
 
         $this->assertInstanceOf(\Filament\Forms\Components\FileUpload::class, $field);
         $this->assertSame('products', $field->getDirectory());
+        $this->assertSame('filament.forms.components.shop-image-upload', $field->getView());
+    }
+
+    public function test_shop_image_upload_view_exposes_native_file_input(): void
+    {
+        $html = file_get_contents(resource_path('views/filament/forms/components/shop-image-upload.blade.php'));
+
+        $this->assertIsString($html);
+        $this->assertStringContainsString('type="file"', $html);
+        $this->assertStringContainsString('انتخاب فایل', $html);
+        $this->assertStringContainsString('shop-image-upload__input', $html);
+        $this->assertStringContainsString('$wire.upload', $html);
     }
 
     public function test_media_picker_lists_files_from_disk_when_registry_empty(): void

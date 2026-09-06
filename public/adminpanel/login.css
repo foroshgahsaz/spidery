@@ -283,7 +283,8 @@ body {
     color: #a1a5b7;
 }
 
-.signup-link a {
+.signup-link a,
+.signup-link .resend-link {
     color: #7239ea;
     text-decoration: none;
     font-weight: 600;
@@ -349,10 +350,30 @@ body {
     margin-top: 1rem;
 }
 
+.otp-countdown {
+    display: inline-block;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+}
+
+#resendLink[hidden],
+#resendLink.disabled {
+    display: none !important;
+}
+
 .resend-link {
     color: #7239ea;
     text-decoration: none;
     font-weight: 600;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+[x-cloak] {
+    display: none !important;
 }
 
 .resend-link:hover {

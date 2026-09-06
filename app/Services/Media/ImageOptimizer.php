@@ -208,10 +208,22 @@ class ImageOptimizer
 
     protected function outputPath(string $relativePath, string $format): string
     {
-        $directory = trim(str_replace('\\', '/', dirname($relativePath)), '/.');
+        $directory = $this->directoryOf($relativePath);
         $filename = pathinfo($relativePath, PATHINFO_FILENAME).'.'.$format;
 
         return $directory === '' ? $filename : $directory.'/'.$filename;
+    }
+
+    protected function directoryOf(string $relativePath): string
+    {
+        $directory = str_replace('\\', '/', dirname($relativePath));
+        $directory = trim($directory, '/');
+
+        if ($directory === '.' || $directory === '') {
+            return '';
+        }
+
+        return $directory;
     }
 
   /**
@@ -242,13 +254,20 @@ class ImageOptimizer
       $image = $manager->read($absolutePath);
       $image = $this->transform($image, $preset);
 
-      $directory = trim(str_replace('\\', '/', dirname($outputPath)), '/.');
+      $directory = $this->directoryOf($outputPath);
 
       if ($directory !== '') {
         $storage->makeDirectory($directory);
       }
 
-      $this->encode($image, $preset)->save($storage->path($outputPath));
+      $absoluteOutput = $storage->path($outputPath);
+      $absoluteDir = dirname($absoluteOutput);
+
+      if (! is_dir($absoluteDir)) {
+        mkdir($absoluteDir, 0775, true);
+      }
+
+      $this->encode($image, $preset)->save($absoluteOutput);
 
       return $outputPath;
     } catch (Throwable $exception) {

@@ -125,7 +125,7 @@ class HealthCheck extends Command
         );
 
         $disk = Storage::disk('public');
-        foreach (['products', 'sliders', 'categories', 'posts', '.thumbs'] as $folder) {
+        foreach (['products', 'sliders', 'categories', 'posts', 'thumbs', '.thumbs'] as $folder) {
             $writable = $this->isWritable($disk, $folder);
             $this->record('storage', "writable: {$folder}", $writable ? 'ok' : 'fail', $writable ? 'OK' : 'not writable');
         }

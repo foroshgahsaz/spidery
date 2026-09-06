@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\SmsSender;
+use App\Filament\Support\CrudErrorNotification;
 use App\Filament\Support\CrudSuccessNotification;
 use App\Filament\Support\FileUploadSanitizer;
 use App\Filament\Support\MissingUploadPathCleaner;
@@ -34,9 +35,7 @@ use App\Policies\UserAddressPolicy;
 use App\Services\Cache\ShopCacheService;
 use App\Services\Media\ImageOptimizer;
 use App\Services\Media\MediaRegistry;
-use App\Services\Settings\SettingsService;
-use App\Services\Sms\KavenegarSmsSender;
-use App\Services\Sms\LogSmsSender;
+use App\Services\Sms\SmsSenderFactory;
 use App\Support\MediaPath;
 use App\Support\ShopMedia;
 use App\Support\StoragePermissionFixer;
@@ -66,18 +65,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(FileUploadController::class, LivewireFileUploadController::class);
 
-        $this->app->bind(SmsSender::class, function () {
-            $kavenegar = app(SettingsService::class)->kavenegar();
-
-            if (($kavenegar['enabled'] ?? false) && ! empty($kavenegar['api_key'])) {
-                return new KavenegarSmsSender;
-            }
-
-            return match (config('sms.driver')) {
-                'kavenegar' => new KavenegarSmsSender,
-                default => new LogSmsSender,
-            };
-        });
+        $this->app->bind(SmsSender::class, fn () => app(SmsSenderFactory::class)->make());
     }
 
     public function boot(): void
@@ -159,6 +147,7 @@ class AppServiceProvider extends ServiceProvider
             $action
                 ->label('افزودن')
                 ->successNotification(CrudSuccessNotification::created())
+                ->failureNotification(CrudErrorNotification::failed())
                 ->beforeFormValidated(function ($action): void {
                     self::sanitizeMountedActionUploads($action);
                 });
@@ -167,6 +156,7 @@ class AppServiceProvider extends ServiceProvider
             $action
                 ->label('ویرایش')
                 ->successNotification(CrudSuccessNotification::saved())
+                ->failureNotification(CrudErrorNotification::failed())
                 ->mutateRecordDataUsing(function (array $data, \Filament\Tables\Actions\EditAction $action): array {
                     $record = $action->getRecord();
 
@@ -181,18 +171,21 @@ class AppServiceProvider extends ServiceProvider
         \Filament\Tables\Actions\DeleteAction::configureUsing(function ($action): void {
             $action
                 ->label('حذف')
-                ->successNotification(CrudSuccessNotification::deleted());
+                ->successNotification(CrudSuccessNotification::deleted())
+                ->failureNotification(CrudErrorNotification::failed());
         });
         ViewAction::configureUsing(fn ($action) => $action->label('مشاهده'));
         DeleteBulkAction::configureUsing(function ($action): void {
             $action
                 ->label('حذف انتخاب‌شده‌ها')
-                ->successNotification(CrudSuccessNotification::deleted());
+                ->successNotification(CrudSuccessNotification::deleted())
+                ->failureNotification(CrudErrorNotification::failed());
         });
         CreateAction::configureUsing(function ($action): void {
             $action
                 ->label('افزودن')
                 ->successNotification(CrudSuccessNotification::created())
+                ->failureNotification(CrudErrorNotification::failed())
                 ->beforeFormValidated(function ($action): void {
                     self::sanitizeMountedActionUploads($action);
                 });
@@ -201,6 +194,7 @@ class AppServiceProvider extends ServiceProvider
             $action
                 ->label('ویرایش')
                 ->successNotification(CrudSuccessNotification::saved())
+                ->failureNotification(CrudErrorNotification::failed())
                 ->mutateRecordDataUsing(function (array $data, EditAction $action): array {
                     $record = $action->getRecord();
 
@@ -215,7 +209,8 @@ class AppServiceProvider extends ServiceProvider
         DeleteAction::configureUsing(function ($action): void {
             $action
                 ->label('حذف')
-                ->successNotification(CrudSuccessNotification::deleted());
+                ->successNotification(CrudSuccessNotification::deleted())
+                ->failureNotification(CrudErrorNotification::failed());
         });
 
         FileUpload::configureUsing(function (FileUpload $component): void {
@@ -256,12 +251,7 @@ class AppServiceProvider extends ServiceProvider
                     $url ??= rescue(fn () => $storage->url($file), report: false) ?? ShopMedia::url($file);
 
                     if (! $exists) {
-                        return $url ? [
-                            'name' => $name,
-                            'size' => 0,
-                            'type' => null,
-                            'url' => $url,
-                        ] : null;
+                        return null;
                     }
 
                     if (! $component->shouldFetchFileInformation()) {

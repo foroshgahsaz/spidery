@@ -4,13 +4,15 @@ namespace App\Services\Auth;
 
 use App\Contracts\SmsSender;
 use App\Models\User;
+use App\Services\Settings\SettingsService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class OtpService
 {
     public function __construct(
-        protected SmsSender $sms
+        protected SmsSender $sms,
+        protected SettingsService $settings
     ) {}
 
     public function send(string $phone): void
@@ -24,7 +26,7 @@ class OtpService
         $throttleKey = "otp:throttle:{$phone}";
 
         if (Cache::has($throttleKey)) {
-            throw new \RuntimeException('لطفاً کمی صبر کنید و دوباره تلاش کنید.');
+            throw new \RuntimeException('ارسال مجدد هنوز فعال نیست. تا پایان شمارنده صبر کنید.');
         }
 
         $code = str_pad((string) random_int(0, 999999), config('shop.otp.length'), '0', STR_PAD_LEFT);
@@ -35,7 +37,7 @@ class OtpService
             now()->addMinutes(config('shop.otp.expires_minutes'))
         );
 
-        Cache::put($throttleKey, true, now()->addSeconds(config('shop.otp.throttle_seconds')));
+        Cache::put($throttleKey, true, now()->addSeconds($this->settings->otpResendSeconds()));
 
         return $code;
     }

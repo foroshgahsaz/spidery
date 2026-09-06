@@ -77,6 +77,29 @@ class ImageOptimizerTest extends TestCase
         $this->assertTrue(Storage::disk('public')->exists($relativePath));
     }
 
+    public function test_it_writes_display_thumbnail_under_hidden_thumbs_directory(): void
+    {
+        if (! extension_loaded('gd') || ! function_exists('imagewebp')) {
+            $this->markTestSkipped('GD with WebP support is required.');
+        }
+
+        $sourcePath = $this->createTestJpeg(800, 600);
+        $relativePath = 'sliders/banner.jpg';
+        Storage::disk('public')->put($relativePath, file_get_contents($sourcePath));
+
+        $output = '.thumbs/hero/test-thumb.webp';
+        $result = app(ImageOptimizer::class)->optimizeFromPreset('public', $relativePath, [
+            'cover_width' => 200,
+            'cover_height' => 80,
+            'quality' => 80,
+            'format' => 'webp',
+        ], $output);
+
+        $this->assertSame($output, $result);
+        $this->assertTrue(Storage::disk('public')->exists($output));
+        $this->assertTrue(is_file(Storage::disk('public')->path($output)));
+    }
+
     public function test_it_returns_original_path_when_disabled(): void
     {
         config(['image-optimizer.enabled' => false]);

@@ -94,9 +94,18 @@ function initAdminSidebar() {
 }
 
 function initModalFix() {
+    let hadOpenModal = false;
+
     const observer = new MutationObserver(() => {
-        const hasOpenModal = document.querySelector('.fi-modal-open');
-        document.body.classList.toggle('fi-has-open-modal', !!hasOpenModal);
+        const hasOpenModal = !!document.querySelector('.fi-modal-open');
+        document.body.classList.toggle('fi-has-open-modal', hasOpenModal);
+
+        if (hasOpenModal && !hadOpenModal) {
+            document.dispatchEvent(new CustomEvent('ax-modal-opened'));
+            window.dispatchEvent(new CustomEvent('ax-modal-opened'));
+        }
+
+        hadOpenModal = hasOpenModal;
     });
 
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });

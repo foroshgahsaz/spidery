@@ -1,6 +1,7 @@
 @php
     use App\Filament\Pages\ManageGeneralSettings;
     use App\Filament\Pages\ManageIntegrations;
+    use App\Filament\Pages\ManageSmsIr;
     use App\Filament\Pages\ManageHomepageImages;
     use App\Filament\Pages\ManageMediaPresets;
     use App\Filament\Pages\ManageTara;
@@ -185,13 +186,15 @@
             'routes' => [
                 'filament.admin.pages.manage-general-settings',
                 'filament.admin.pages.kavenegar',
+                'filament.admin.pages.sms-ir',
             ],
             'menus' => [
                 ['label' => 'تنظیمات عمومی', 'icon' => 'fa-globe', 'items' => [
                     ['label' => 'مدیریت سایت', 'url' => ManageGeneralSettings::getUrl(), 'icon' => 'fa-cog'],
                 ]],
                 ['label' => 'پیامک', 'icon' => 'fa-sms', 'items' => [
-                    ['label' => 'کاوه‌نگار', 'url' => ManageIntegrations::getUrl(), 'icon' => 'fa-comment-dots'],
+                    ['label' => 'sms.ir', 'url' => ManageSmsIr::getUrl(), 'icon' => 'fa-comment-dots'],
+                    ['label' => 'کاوه‌نگار', 'url' => ManageIntegrations::getUrl(), 'icon' => 'fa-comment-sms'],
                 ]],
             ],
         ],

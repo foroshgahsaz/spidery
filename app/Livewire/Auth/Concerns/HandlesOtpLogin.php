@@ -20,6 +20,8 @@ trait HandlesOtpLogin
 
     public string $otp = '';
 
+    public int $otpSentAt = 0;
+
     public function sendOtp(OtpService $otp): void
     {
         $this->validate([
@@ -44,11 +46,15 @@ trait HandlesOtpLogin
         try {
             $otp->send($this->phone);
         } catch (\RuntimeException $e) {
-            throw ValidationException::withMessages(['phone' => $e->getMessage()]);
+            throw ValidationException::withMessages([
+                'phone' => $e->getMessage(),
+                'otp' => $e->getMessage(),
+            ]);
         }
 
         RateLimiter::hit($key, 300);
         $this->step = 'otp';
+        $this->otpSentAt = time();
         session()->flash('login_success', 'کد تایید به شماره شما ارسال شد.');
     }
 
