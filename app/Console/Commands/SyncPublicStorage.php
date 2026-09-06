@@ -90,10 +90,67 @@ class SyncPublicStorage extends Command
         if ($this->option('dry-run')) {
             $this->comment('Dry run only. Re-run without --dry-run to apply.');
         } else {
+            $this->verifyTarget($targetRoot);
             $this->comment('Run `php artisan shop:audit-product-images` to verify missing files.');
+            $this->comment('Run `php artisan shop:verify-storage` for multi-pod diagnostics.');
         }
 
         return self::SUCCESS;
+    }
+
+    protected function verifyTarget(string $targetRoot): void
+    {
+        $this->newLine();
+        $this->line('Verification on public disk:');
+
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $total = 0;
+
+        foreach (['products', 'categories', 'sliders', 'posts', 'settings', 'seo', 'brands'] as $folder) {
+            $count = 0;
+
+            try {
+                $count = $disk->exists($folder) ? count($disk->allFiles($folder)) : 0;
+            } catch (\Throwable) {
+                $count = 0;
+            }
+
+            $this->line("  {$folder}/: {$count}");
+            $total += $count;
+        }
+
+        $this->line('  total files visible to Laravel: '.$total);
+        $this->line('  raw /data count: '.$this->countPath($targetRoot));
+
+        if ($total === 0) {
+            $this->error('WARNING: public disk appears empty after sync on THIS pod.');
+            $this->line('If using multiple pods, ensure /data is a shared persistent volume.');
+        }
+    }
+
+    protected function countPath(string $path): string
+    {
+        if (! is_dir($path)) {
+            return 'missing';
+        }
+
+        $count = 0;
+
+        try {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $file) {
+                if ($file->isFile()) {
+                    $count++;
+                }
+            }
+        } catch (\Throwable) {
+            return 'error';
+        }
+
+        return (string) $count;
     }
 
     /**

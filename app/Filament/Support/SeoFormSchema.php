@@ -52,11 +52,7 @@ class SeoFormSchema
             $fields[] = Forms\Components\Textarea::make('og_description')->label('توضیح Open Graph')->maxLength(200)->rows(2);
         }
 
-        $fields[] = Forms\Components\FileUpload::make('og_image')
-            ->label('تصویر Open Graph')
-            ->image()
-            ->disk('public')
-            ->directory('seo');
+        $fields[] = ShopMediaPicker::image('og_image', 'seo', 'تصویر Open Graph');
         $fields[] = Forms\Components\TextInput::make('canonical_url')->label('آدرس Canonical')->url();
         $fields[] = Forms\Components\Select::make('robots')
             ->label('دستور Robots')

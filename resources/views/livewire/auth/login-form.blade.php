@@ -1,3 +1,7 @@
+@php
+    $resendSeconds = app(\App\Services\Settings\SettingsService::class)->otpResendSeconds();
+@endphp
+
 @if (session('login_success'))
     <div class="mb-4 p-3 bg-emerald-50 text-emerald-700 rounded-xl text-sm">{{ session('login_success') }}</div>
 @endif
@@ -37,10 +41,43 @@
             <span wire:loading.remove wire:target="verifyOtp">تایید و ورود</span>
             <span wire:loading wire:target="verifyOtp">در حال بررسی...</span>
         </button>
-        <button type="button" wire:click="sendOtp" wire:loading.attr="disabled"
-                class="w-full text-sm text-gray-500 hover:text-brand-green py-2">
-            ارسال مجدد کد
-        </button>
+        <div
+            wire:key="otp-timer-{{ $otpSentAt }}"
+            class="text-center"
+            x-data="{
+                remaining: {{ $resendSeconds }},
+                timer: null,
+                get clock() {
+                    const minutes = String(Math.floor(this.remaining / 60)).padStart(2, '0')
+                    const seconds = String(this.remaining % 60).padStart(2, '0')
+                    return minutes + ':' + seconds
+                },
+                start() {
+                    this.timer = setInterval(() => {
+                        if (this.remaining <= 0) {
+                            clearInterval(this.timer)
+                            return
+                        }
+                        this.remaining -= 1
+                    }, 1000)
+                }
+            }"
+            x-init="start()"
+        >
+            <p x-show="remaining > 0" class="text-sm text-gray-500" x-cloak>
+                ارسال مجدد تا <span dir="ltr" x-text="clock"></span>
+            </p>
+            <button
+                type="button"
+                x-show="remaining <= 0"
+                x-cloak
+                wire:click="sendOtp"
+                wire:loading.attr="disabled"
+                class="w-full text-sm text-brand-green hover:text-emerald-700 py-2 font-bold"
+            >
+                ارسال مجدد کد
+            </button>
+        </div>
     </form>
 @endif
 

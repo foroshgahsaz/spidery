@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Product;
+use App\Services\Media\DisplayImageService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -24,8 +25,30 @@ class ShopFormatter
 
     public static function productImage(?Product $product, string $fallback = 'shop/images/products/clothing.svg'): string
     {
+        $path = self::productImagePath($product);
+
+        if ($path) {
+            return self::storageImageUrl($path, $fallback);
+        }
+
+        return asset($fallback);
+    }
+
+    public static function productImageForSection(?Product $product, string $section, string $fallback = 'shop/images/products/clothing.svg'): string
+    {
+        $path = self::productImagePath($product);
+
+        if ($path) {
+            return self::sectionImage($section, $path, $fallback);
+        }
+
+        return asset($fallback);
+    }
+
+    public static function productImagePath(?Product $product): ?string
+    {
         if (! $product) {
-            return asset($fallback);
+            return null;
         }
 
         $image = $product->relationLoaded('images')
@@ -37,11 +60,18 @@ class ShopFormatter
                 ?? $product->images()->orderBy('position')->first();
         }
 
-        if ($image?->image) {
-            return self::storageImageUrl($image->image, $fallback);
+        return $image?->image;
+    }
+
+    public static function sectionImage(string $section, ?string $path, string $fallback = 'shop/images/products/clothing.svg'): string
+    {
+        if (! $path) {
+            return asset($fallback);
         }
 
-        return asset($fallback);
+        $url = app(DisplayImageService::class)->url($section, $path);
+
+        return $url ?? self::storageImageUrl($path, $fallback);
     }
 
     public static function storageImageUrl(?string $path, string $fallback = 'shop/images/products/clothing.svg'): string
@@ -79,10 +109,15 @@ class ShopFormatter
 
     public static function categoryImage(?string $path): string
     {
+        return self::categoryImageForSection($path);
+    }
+
+    public static function categoryImageForSection(?string $path): string
+    {
         if (! $path) {
             return asset('shop/images/categories/code.svg');
         }
 
-        return ShopMedia::url($path) ?? asset('shop/images/categories/code.svg');
+        return self::sectionImage('categories', $path, 'shop/images/categories/code.svg');
     }
 }

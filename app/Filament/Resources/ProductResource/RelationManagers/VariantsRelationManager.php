@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ProductResource\RelationManagers;
 
 use App\Filament\Support\AdminImageColumn;
+use App\Filament\Support\ShopMediaPicker;
 use App\Models\AttributeValue;
 use App\Models\ProductVariant;
 use App\Services\Product\VariantGenerator;
@@ -53,13 +54,7 @@ class VariantsRelationManager extends RelationManager
                     ->label('وزن (گرم)')
                     ->numeric()
                     ->suffix('گرم'),
-                Forms\Components\FileUpload::make('image')
-                    ->label('تصویر واریانت')
-                    ->image()
-                    ->disk('public')
-                    ->directory('products/variants')
-                    ->visibility('public')
-                    ->columnSpanFull(),
+                ShopMediaPicker::image('image', 'products/variants', 'تصویر واریانت')->columnSpanFull(),
                 Forms\Components\Select::make('attributeValues')
                     ->label('مقادیر ویژگی')
                     ->relationship('attributeValues', 'value')

@@ -1,9 +1,11 @@
-@props(['product'])
+@props(['product', 'section' => null])
 
 @php
     use App\Support\ShopFormatter;
     $discount = ShopFormatter::discountPercent($product);
-    $image = ShopFormatter::productImage($product);
+    $image = $section
+        ? ShopFormatter::productImageForSection($product, $section)
+        : ShopFormatter::productImage($product);
 @endphp
 
 <article class="deal-card">

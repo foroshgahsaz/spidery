@@ -161,6 +161,12 @@ class MediaFileResource extends Resource
                         if (is_string($path) && $path !== '') {
                             $registry->registerFromPath('public', $path);
                         }
+
+                        Notification::make()
+                            ->title('آپلود شد')
+                            ->body('فایل با موفقیت در کتابخانه رسانه ثبت شد.')
+                            ->success()
+                            ->send();
                     }),
             ]);
     }

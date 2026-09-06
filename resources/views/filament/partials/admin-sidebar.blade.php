@@ -1,6 +1,8 @@
 @php
     use App\Filament\Pages\ManageGeneralSettings;
     use App\Filament\Pages\ManageIntegrations;
+    use App\Filament\Pages\ManageSmsIr;
+    use App\Filament\Pages\ManageHomepageImages;
     use App\Filament\Pages\ManageMediaPresets;
     use App\Filament\Pages\ManageTara;
     use App\Filament\Pages\ManageZarinpal;
@@ -166,13 +168,15 @@
             'routes' => [
                 'filament.admin.resources.media-files.*',
                 'filament.admin.pages.media-presets',
+                'filament.admin.pages.homepage-images',
             ],
             'menus' => [
                 ['label' => 'کتابخانه رسانه', 'icon' => 'fa-photo-film', 'items' => [
                     ['label' => 'همه فایل‌ها', 'url' => MediaFileResource::getUrl('index'), 'icon' => 'fa-images'],
                 ]],
                 ['label' => 'تنظیمات تصویر', 'icon' => 'fa-crop', 'items' => [
-                    ['label' => 'سایز و تامبنیل', 'url' => ManageMediaPresets::getUrl(), 'icon' => 'fa-sliders'],
+                    ['label' => 'سایز آپلود', 'url' => ManageMediaPresets::getUrl(), 'icon' => 'fa-sliders'],
+                    ['label' => 'تامبنیل صفحه اصلی', 'url' => ManageHomepageImages::getUrl(), 'icon' => 'fa-image'],
                 ]],
             ],
         ],
@@ -182,13 +186,15 @@
             'routes' => [
                 'filament.admin.pages.manage-general-settings',
                 'filament.admin.pages.kavenegar',
+                'filament.admin.pages.sms-ir',
             ],
             'menus' => [
                 ['label' => 'تنظیمات عمومی', 'icon' => 'fa-globe', 'items' => [
                     ['label' => 'مدیریت سایت', 'url' => ManageGeneralSettings::getUrl(), 'icon' => 'fa-cog'],
                 ]],
                 ['label' => 'پیامک', 'icon' => 'fa-sms', 'items' => [
-                    ['label' => 'کاوه‌نگار', 'url' => ManageIntegrations::getUrl(), 'icon' => 'fa-comment-dots'],
+                    ['label' => 'sms.ir', 'url' => ManageSmsIr::getUrl(), 'icon' => 'fa-comment-dots'],
+                    ['label' => 'کاوه‌نگار', 'url' => ManageIntegrations::getUrl(), 'icon' => 'fa-comment-sms'],
                 ]],
             ],
         ],

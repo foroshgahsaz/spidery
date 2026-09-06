@@ -2,9 +2,11 @@
 
 namespace App\Filament\Support;
 
+use App\Support\MediaPath;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Form;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -32,13 +34,22 @@ class FileUploadSanitizer
             }
 
             $fallback = $record?->getAttribute($field->getName());
+            $fallback = is_string($fallback) ? (MediaPath::normalize($fallback) ?? $fallback) : null;
+
+            if (
+                is_string($fallback)
+                && $fallback !== ''
+                && ! MissingUploadPathCleaner::existsOnDisk(Storage::disk('public'), $fallback)
+            ) {
+                $fallback = null;
+            }
 
             data_set(
                 $livewire,
                 $statePath,
                 self::sanitizeState(
                     $state,
-                    is_string($fallback) ? $fallback : null,
+                    $fallback,
                     $statePath,
                 ),
             );

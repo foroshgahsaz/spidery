@@ -1,6 +1,6 @@
 @extends('layouts.shop')
 
-@section('title', $post->title . ' | ' . config('app.name'))
+@section('title', $post->title . ' | ' . site_name())
 
 @section('content')
 <article class="max-w-site mx-auto px-4 md:px-6 py-6 md:py-10">

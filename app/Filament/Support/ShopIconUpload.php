@@ -9,6 +9,7 @@ class ShopIconUpload
     public static function make(string $name, string $directory, string $label = 'آیکون'): FileUpload
     {
         return FileUpload::make($name)
+            ->view('filament.forms.components.shop-image-upload')
             ->label($label)
             ->image()
             ->disk('public')

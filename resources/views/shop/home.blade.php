@@ -1,6 +1,6 @@
 @extends('layouts.shop')
 
-@section('title', config('app.name') . ' | فروشگاه آنلاین')
+@section('title', site_name() . ' | فروشگاه آنلاین')
 
 @section('content')
     @if(session('success'))
@@ -16,11 +16,7 @@
                 @forelse($sliders as $i => $slider)
                     <div class="swiper-slide">
                         @php
-                            $url = str_starts_with($slider->image, 'http')
-                                ? $slider->image
-                                : (str_starts_with($slider->image, 'shop/')
-                                    ? asset($slider->image)
-                                    : \App\Support\ShopMedia::url($slider->image));
+                            $url = \App\Support\ShopFormatter::sectionImage('hero', $slider->image, 'shop/images/hero/slide-ai.svg');
                         @endphp
                         @if($slider->link)
                             <a href="{{ $slider->link }}" class="hero-slide__link">
@@ -88,7 +84,7 @@
                                 </div>
                                 @foreach($discounted as $product)
                                     <div class="swiper-slide swiper-slide--product h-auto">
-                                        <x-shop.deal-card :product="$product" />
+                                        <x-shop.deal-card :product="$product" section="deals" />
                                     </div>
                                 @endforeach
                                 <div class="swiper-slide swiper-slide--view-all h-auto">
@@ -118,7 +114,7 @@
                     <div class="swiper-wrapper">
                         @foreach($new as $product)
                             <div class="swiper-slide h-auto">
-                                <x-shop.product-card :product="$product" variant="clothing" />
+                                <x-shop.product-card :product="$product" variant="clothing" section="new_products" />
                             </div>
                         @endforeach
                     </div>
@@ -138,7 +134,7 @@
                     <div class="swiper-wrapper">
                         @foreach($best_sellers as $product)
                             <div class="swiper-slide h-auto">
-                                <x-shop.product-card :product="$product" variant="scroll" />
+                                <x-shop.product-card :product="$product" variant="scroll" section="best_sellers" />
                             </div>
                         @endforeach
                     </div>
@@ -162,7 +158,7 @@
                                 <article class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                                     <a href="{{ route('blog.show', $post) }}">
                                         <div class="relative">
-                                            <img src="{{ $post->image ? \App\Support\ShopMedia::url($post->image) : asset('shop/images/blog/article-1.svg') }}" alt="{{ $post->title }}" class="w-full h-40 object-cover" loading="lazy">
+                                            <img src="{{ \App\Support\ShopFormatter::sectionImage('blog', $post->image, 'shop/images/blog/article-1.svg') }}" alt="{{ $post->title }}" class="w-full h-40 object-cover" loading="lazy">
                                         </div>
                                     </a>
                                     <div class="p-4">

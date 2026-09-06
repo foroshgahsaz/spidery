@@ -84,6 +84,7 @@ function validateOTP(otp) {
 
 let currentTab = 'mobile';
 let timerInterval;
+let timerStartedFor = null;
 
 function switchTab(tab) {
     currentTab = tab;
@@ -175,23 +176,68 @@ function backToLogin() {
     });
 }
 
-function startTimer() {
-    let timeLeft = 120;
-    const timerElement = document.getElementById('timer');
-    const resendLink = document.getElementById('resendLink');
+function formatOtpClock(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
 
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function hideAdminResend() {
+    const resendLink = document.getElementById('resendLink');
+    if (!resendLink) {
+        return;
+    }
+
+    resendLink.hidden = true;
+    resendLink.disabled = true;
+    resendLink.classList.add('disabled');
+}
+
+function showAdminResend() {
+    const resendLink = document.getElementById('resendLink');
+    if (!resendLink) {
+        return;
+    }
+
+    resendLink.hidden = false;
+    resendLink.disabled = false;
+    resendLink.classList.remove('disabled');
+}
+
+function startTimer() {
+    const otpPage = document.getElementById('otpPage');
+    const timerElement = document.getElementById('timer');
+
+    if (!otpPage || !timerElement || otpPage.style.display === 'none') {
+        return;
+    }
+
+    const timerKey = otpPage.getAttribute('wire:key') || otpPage.dataset.resendSeconds;
+    if (timerStartedFor === timerKey) {
+        return;
+    }
+
+    const timeLeftStart = parseInt(otpPage.dataset.resendSeconds || '120', 10);
+    let timeLeft = Number.isFinite(timeLeftStart) && timeLeftStart > 0 ? timeLeftStart : 120;
+
+    timerStartedFor = timerKey;
     clearInterval(timerInterval);
+    hideAdminResend();
+    timerElement.hidden = false;
+    timerElement.textContent = formatOtpClock(timeLeft);
 
     timerInterval = setInterval(() => {
         timeLeft -= 1;
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            resendLink.classList.remove('disabled');
+            timerElement.hidden = true;
+            showAdminResend();
+            return;
         }
+
+        timerElement.textContent = formatOtpClock(timeLeft);
     }, 1000);
 }
 
@@ -213,81 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileInput = document.getElementById('mobileInput');
     mobileInput?.addEventListener('input', () => clearError('mobile'));
 
-    document.getElementById('mobileForm')?.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const mobile = mobileInput?.value.trim() ?? '';
-        const validation = validateMobile(mobile);
-
-        if (!validation.valid) {
-            showError('mobile', validation.message);
-            return;
-        }
-
-        clearError('mobile');
-        document.getElementById('displayMobile').textContent = mobile;
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('otpPage').style.display = 'block';
-        startTimer();
-    });
-
-    const otpInputs = document.querySelectorAll('.otp-input');
-
-    otpInputs.forEach((input, index) => {
-        input.addEventListener('input', function () {
-            clearError('otp');
-            otpInputs.forEach((item) => item.classList.remove('error'));
-            this.value = this.value.replace(/[^0-9]/g, '');
-
-            if (this.value.length === 1 && index < otpInputs.length - 1) {
-                otpInputs[index + 1].focus();
-            }
-        });
-
-        input.addEventListener('keydown', function (event) {
-            if (event.key === 'Backspace' && this.value === '' && index > 0) {
-                otpInputs[index - 1].focus();
-            }
-        });
-    });
-
-    document.getElementById('otpForm')?.addEventListener('submit', (event) => {
-        event.preventDefault();
-        let otp = '';
-        otpInputs.forEach((input) => {
-            otp += input.value;
-        });
-
-        const validation = validateOTP(otp);
-        if (!validation.valid) {
-            showError('otp', validation.message);
-            otpInputs.forEach((input) => input.classList.add('error'));
-            return;
-        }
-
-        showError('otp', ErrorMessages.otp.unavailable);
-    });
-
-    document.getElementById('resendLink')?.addEventListener('click', (event) => {
-        event.preventDefault();
-        const link = event.currentTarget;
-        if (link.classList.contains('disabled')) {
-            return;
-        }
-
-        link.classList.add('disabled');
-        clearError('otp');
-        otpInputs.forEach((input) => {
-            input.value = '';
-            input.classList.remove('error');
-        });
-        otpInputs[0]?.focus();
-        startTimer();
-    });
-
-    document.getElementById('backToLoginLink')?.addEventListener('click', (event) => {
-        event.preventDefault();
-        backToLogin();
-    });
+    bindOtpInputs();
+    bindOtpFormSubmit();
 
     if (window.Livewire) {
         bindLoginLivewireHooks();
@@ -296,9 +269,104 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function syncAdminOtpCode() {
+    const otpInputs = document.querySelectorAll('.otp-input');
+    let code = '';
+    otpInputs.forEach((input) => {
+        code += input.value;
+    });
+
+    const hidden = document.getElementById('otpCodeHidden');
+    if (hidden && hidden.value !== code) {
+        hidden.value = code;
+        hidden.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    const root = document.querySelector('.admin-login-root');
+    const wireId = root?.closest('[wire\\:id]')?.getAttribute('wire:id')
+        || document.querySelector('[wire\\:id]')?.getAttribute('wire:id');
+
+    if (wireId && window.Livewire) {
+        const component = Livewire.find(wireId);
+        if (component) {
+            component.set('otpCode', code);
+        }
+    }
+}
+
+function bindOtpInputs() {
+    const otpInputs = document.querySelectorAll('.otp-input');
+
+    otpInputs.forEach((input, index) => {
+        if (input.dataset.bound === '1') {
+            return;
+        }
+        input.dataset.bound = '1';
+
+        input.addEventListener('input', function () {
+            clearError('otp');
+            otpInputs.forEach((item) => item.classList.remove('error'));
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            if (this.value.length === 1 && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+
+            syncAdminOtpCode();
+        });
+
+        input.addEventListener('keydown', function (event) {
+            if (event.key === 'Backspace' && this.value === '' && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+    });
+}
+
+function bindOtpFormSubmit() {
+    const form = document.getElementById('otpForm');
+    if (!form || form.dataset.bound === '1') {
+        return;
+    }
+
+    form.dataset.bound = '1';
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const otpInputs = document.querySelectorAll('.otp-input');
+        let code = '';
+        otpInputs.forEach((input) => {
+            code += input.value;
+        });
+
+        const validation = validateOTP(code);
+        if (!validation.valid) {
+            showError('otp', validation.message);
+            otpInputs.forEach((input) => input.classList.add('error'));
+            return;
+        }
+
+        const root = document.querySelector('[wire\\:id]');
+        const wireId = root?.getAttribute('wire:id');
+        if (!wireId || !window.Livewire) {
+            return;
+        }
+
+        const component = Livewire.find(wireId);
+        await component.set('otpCode', code);
+        await component.call('verifyAdminOtp');
+    }, true);
+}
+
 function bindLoginLivewireHooks() {
     const restore = () => {
-        requestAnimationFrame(restoreLoginTab);
+        requestAnimationFrame(() => {
+            restoreLoginTab();
+            bindOtpInputs();
+            bindOtpFormSubmit();
+            startTimer();
+        });
     };
 
     Livewire.hook('message.processed', restore);

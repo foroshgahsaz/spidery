@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Support\AdminTable;
 use App\Filament\Support\SeoFormSchema;
+use App\Filament\Support\ShopMediaPicker;
 use App\Models\Category;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -55,12 +56,7 @@ class CategoryResource extends Resource
                         ->label('توضیحات')
                         ->rows(4)
                         ->columnSpanFull(),
-                    Forms\Components\FileUpload::make('image')
-                        ->label('تصویر')
-                        ->image()
-                        ->disk('public')
-                        ->directory('categories')
-                        ->columnSpanFull(),
+                    ShopMediaPicker::image('image', 'categories', 'تصویر')->columnSpanFull(),
                     Forms\Components\Toggle::make('is_active')
                         ->label('فعال')
                         ->default(true),

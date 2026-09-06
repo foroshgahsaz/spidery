@@ -21,6 +21,8 @@ class StoragePermissionFixer
             Storage::disk('public')->path('posts'),
             Storage::disk('public')->path('seo'),
             Storage::disk('public')->path('pages'),
+            Storage::disk('public')->path('thumbs'),
+            Storage::disk('public')->path('.thumbs'),
         ])));
     }
 

@@ -1,9 +1,11 @@
-@props(['product', 'variant' => 'clothing'])
+@props(['product', 'variant' => 'clothing', 'section' => null])
 
 @php
     use App\Support\ShopFormatter;
     $discount = ShopFormatter::discountPercent($product);
-    $image = ShopFormatter::productImage($product);
+    $image = $section
+        ? ShopFormatter::productImageForSection($product, $section)
+        : ShopFormatter::productImage($product);
 @endphp
 
 <a href="{{ route('products.show', $product) }}" class="product-card product-card-link {{ $variant === 'clothing' ? 'clothing-card' : 'product-scroll-card' }} h-full w-full">

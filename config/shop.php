@@ -12,7 +12,7 @@ return [
     'otp' => [
         'length' => 6,
         'expires_minutes' => 5,
-        'throttle_seconds' => 60,
+        'throttle_seconds' => 120,
     ],
 
     'cart' => [

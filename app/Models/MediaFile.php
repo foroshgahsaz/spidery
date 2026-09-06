@@ -49,7 +49,11 @@ class MediaFile extends Model
 
     public function existsOnDisk(): bool
     {
-        return Storage::disk($this->disk)->exists($this->path);
+        try {
+            return Storage::disk($this->disk)->exists($this->path);
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     public function dimensionsLabel(): string

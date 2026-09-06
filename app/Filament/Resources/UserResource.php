@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Support\AdminImageColumn;
 use App\Filament\Support\AdminTable;
+use App\Filament\Support\ShopMediaPicker;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -55,12 +56,7 @@ class UserResource extends Resource
                     Forms\Components\TextInput::make('name')->label('نام')->required(),
                     Forms\Components\TextInput::make('phone')->label('موبایل')->required()->unique(ignoreRecord: true),
                     Forms\Components\TextInput::make('email')->label('ایمیل')->email()->unique(ignoreRecord: true),
-                    Forms\Components\FileUpload::make('avatar')
-                        ->label('تصویر پروفایل')
-                        ->image()
-                        ->disk('public')
-                        ->directory('avatars')
-                        ->visibility('public'),
+                    ShopMediaPicker::image('avatar', 'avatars', 'تصویر پروفایل'),
                     Forms\Components\TextInput::make('password')
                         ->label('رمز عبور')
                         ->password()

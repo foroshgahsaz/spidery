@@ -29,7 +29,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "bootstrap/livewire-upload.php"
+            "bootstrap/livewire-upload.php",
+            "app/Support/helpers.php"
         ]
     },
     "autoload-dev": {

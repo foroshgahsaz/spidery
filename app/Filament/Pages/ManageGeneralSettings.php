@@ -4,6 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Filament\Support\CrudSuccessNotification;
 use App\Filament\Support\FileUploadSanitizer;
+use App\Filament\Support\NormalizesFileUploadFormState;
+use App\Filament\Support\ShopMediaPicker;
 use App\Services\Media\MediaRegistry;
 use App\Services\Settings\SettingsService;
 use Filament\Forms;
@@ -15,6 +17,9 @@ use Filament\Pages\Page;
 class ManageGeneralSettings extends Page implements HasForms
 {
     use InteractsWithForms;
+    use NormalizesFileUploadFormState {
+        NormalizesFileUploadFormState::getFormUploadedFiles insteadof InteractsWithForms;
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
 
@@ -64,17 +69,8 @@ class ManageGeneralSettings extends Page implements HasForms
                             ->rows(3)
                             ->maxLength(500)
                             ->helperText('برای SEO و نمایش در فوتر'),
-                        Forms\Components\FileUpload::make('logo')
-                            ->label('لوگو')
-                            ->image()
-                            ->directory('settings')
-                            ->disk('public')
-                            ->maxSize(2048),
-                        Forms\Components\FileUpload::make('favicon')
-                            ->label('فاوآیکن')
-                            ->image()
-                            ->directory('settings')
-                            ->disk('public')
+                        ShopMediaPicker::image('logo', 'settings', 'لوگو')->maxSize(2048),
+                        ShopMediaPicker::image('favicon', 'settings', 'فاوآیکن')
                             ->maxSize(512)
                             ->helperText('فرمت PNG یا ICO، حداکثر ۵۱۲KB'),
                     ])->columns(2),
@@ -113,8 +109,8 @@ class ManageGeneralSettings extends Page implements HasForms
 
         $data = $this->form->getState();
 
-        $logo = is_array($data['logo'] ?? null) ? ($data['logo'][0] ?? '') : ($data['logo'] ?? '');
-        $favicon = is_array($data['favicon'] ?? null) ? ($data['favicon'][0] ?? '') : ($data['favicon'] ?? '');
+        $logo = collect($data['logo'] ?? [])->first(fn ($value) => is_string($value) && $value !== '') ?? '';
+        $favicon = collect($data['favicon'] ?? [])->first(fn ($value) => is_string($value) && $value !== '') ?? '';
 
         $settings->setMany('site', [
             'name' => $data['name'] ?? '',

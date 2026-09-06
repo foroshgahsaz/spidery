@@ -9,12 +9,12 @@
         $needsSwiper = request()->routeIs('home', 'products.show');
         $needsListingAssets = request()->routeIs('products.*', 'categories.*', 'brands.*');
     @endphp
-    <title>@yield('title', $siteSettings['name'] ?? config('app.name', 'چاپینو'))</title>
+    <title>@yield('title', site_name())</title>
     @hasSection('meta')
         @yield('meta')
     @else
         <x-seo-meta :seo="\App\Support\SeoPresenter::for(null, [
-            'title' => $siteSettings['name'] ?? config('app.name'),
+            'title' => site_name(),
             'description' => $siteSettings['description'] ?? 'فروشگاه آنلاین',
         ])" />
     @endif

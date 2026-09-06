@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\HomeSliderResource\Pages;
 use App\Filament\Support\AdminImageColumn;
+use App\Filament\Support\ShopMediaPicker;
 use App\Models\HomeSlider;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -37,12 +38,7 @@ class HomeSliderResource extends Resource
                 Forms\Components\TextInput::make('title')
                     ->label('عنوان')
                     ->maxLength(255),
-                Forms\Components\FileUpload::make('image')
-                    ->label('تصویر')
-                    ->image()
-                    ->disk('public')
-                    ->directory('sliders')
-                    ->visibility('public')
+                ShopMediaPicker::image('image', 'sliders', 'تصویر')
                     ->required()
                     ->maxSize(4096),
                 Forms\Components\TextInput::make('link')

@@ -6,6 +6,7 @@ use App\Filament\Resources\BrandResource\Pages;
 use App\Filament\Support\AdminImageColumn;
 use App\Filament\Support\AdminTable;
 use App\Filament\Support\SeoFormSchema;
+use App\Filament\Support\ShopMediaPicker;
 use App\Models\Brand;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -45,12 +46,7 @@ class BrandResource extends Resource
                         ->required()
                         ->unique(ignoreRecord: true),
                     Forms\Components\Textarea::make('description')->label('توضیحات')->columnSpanFull(),
-                    Forms\Components\FileUpload::make('logo')
-                        ->label('لوگو')
-                        ->image()
-                        ->disk('public')
-                        ->directory('brands')
-                        ->visibility('public'),
+                    ShopMediaPicker::image('logo', 'brands', 'لوگو'),
                     Forms\Components\Toggle::make('is_active')->label('فعال')->default(true),
                     Forms\Components\TextInput::make('position')->label('ترتیب')->numeric()->default(0),
                 ])->columns(2),

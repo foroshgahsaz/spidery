@@ -1,6 +1,6 @@
 @extends('layouts.shop')
 
-@section('title', ($pageTitle ?? 'لیست محصولات') . ' | ' . config('app.name'))
+@section('title', ($pageTitle ?? 'لیست محصولات') . ' | ' . site_name())
 @section('body_class', 'listing-page')
 
 @section('content')

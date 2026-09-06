@@ -6,6 +6,7 @@ use App\Filament\Resources\PostResource\Pages;
 use App\Filament\Support\AdminTable;
 use App\Filament\Support\RichContentEditor;
 use App\Filament\Support\SeoFormSchema;
+use App\Filament\Support\ShopMediaPicker;
 use App\Models\Post;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -44,11 +45,7 @@ class PostResource extends Resource
                     Forms\Components\TextInput::make('slug')->label('اسلاگ')->required()->unique(ignoreRecord: true),
                     Forms\Components\Textarea::make('excerpt')->label('خلاصه')->rows(3)->columnSpanFull(),
                     RichContentEditor::make('content', 'محتوا', 'posts'),
-                    Forms\Components\FileUpload::make('image')
-                        ->label('تصویر')
-                        ->disk('public')
-                        ->directory('posts')
-                        ->visibility('public'),
+                    ShopMediaPicker::image('image', 'posts', 'تصویر'),
                     Forms\Components\Toggle::make('is_active')->label('فعال')->default(true),
                     Forms\Components\DateTimePicker::make('published_at')->label('تاریخ انتشار'),
                 ])->columns(2),

@@ -208,9 +208,76 @@ class ImageOptimizer
 
     protected function outputPath(string $relativePath, string $format): string
     {
-        $directory = trim(str_replace('\\', '/', dirname($relativePath)), '/.');
+        $directory = $this->directoryOf($relativePath);
         $filename = pathinfo($relativePath, PATHINFO_FILENAME).'.'.$format;
 
         return $directory === '' ? $filename : $directory.'/'.$filename;
     }
+
+    protected function directoryOf(string $relativePath): string
+    {
+        $directory = str_replace('\\', '/', dirname($relativePath));
+        $directory = trim($directory, '/');
+
+        if ($directory === '.' || $directory === '') {
+            return '';
+        }
+
+        return $directory;
+    }
+
+  /**
+   * Resize/encode a source image into a dedicated output path (display thumbnails).
+   *
+   * @param  array<string, mixed>  $preset
+   */
+  public function optimizeFromPreset(string $disk, string $sourcePath, array $preset, string $outputPath): ?string
+  {
+    if (! $this->isEnabled()) {
+      return null;
+    }
+
+    $manager = $this->manager();
+
+    if ($manager === null) {
+      return null;
+    }
+
+    $storage = Storage::disk($disk);
+    $absolutePath = $storage->path($sourcePath);
+
+    if (! is_file($absolutePath) || ! $this->shouldOptimize($absolutePath)) {
+      return null;
+    }
+
+    try {
+      $image = $manager->read($absolutePath);
+      $image = $this->transform($image, $preset);
+
+      $directory = $this->directoryOf($outputPath);
+
+      if ($directory !== '') {
+        $storage->makeDirectory($directory);
+      }
+
+      $absoluteOutput = $storage->path($outputPath);
+      $absoluteDir = dirname($absoluteOutput);
+
+      if (! is_dir($absoluteDir)) {
+        mkdir($absoluteDir, 0775, true);
+      }
+
+      $this->encode($image, $preset)->save($absoluteOutput);
+
+      return $outputPath;
+    } catch (Throwable $exception) {
+      Log::warning('Display thumbnail generation failed.', [
+        'source' => $sourcePath,
+        'output' => $outputPath,
+        'error' => $exception->getMessage(),
+      ]);
+
+      return null;
+    }
+  }
 }

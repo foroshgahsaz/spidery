@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Category;
+use App\Support\MediaPath;
+use App\Support\ShopMedia;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\FileUploadConfiguration;
@@ -30,6 +33,7 @@ class DiagnoseUploads extends Command
             ['livewire temp directory', $tempDirectory],
             ['livewire temp full path', $tempDisk->path($tempDirectory)],
             ['override loaded', $this->overridePath()],
+            ['MediaPath helper', class_exists(MediaPath::class) ? 'OK' : 'MISSING (redeploy master)'],
         ];
 
         $this->table(['Setting', 'Value'], $rows);
@@ -105,6 +109,24 @@ class DiagnoseUploads extends Command
         $this->line('  livewire temp files on disk: '.$tempFiles);
 
         $this->newLine();
+        $this->line('Category image sample (laptop):');
+        $category = Category::query()->where('slug', 'laptop')->first();
+
+        if ($category === null) {
+            $this->line('  category not found');
+        } elseif (blank($category->image)) {
+            $this->line('  no image in database');
+        } else {
+            $normalized = MediaPath::normalize($category->image);
+            $exists = $normalized !== null && $publicDisk->exists($normalized);
+
+            $this->line('  db path: '.$category->image);
+            $this->line('  normalized: '.($normalized ?? '—'));
+            $this->line('  exists on disk: '.($exists ? 'yes' : 'no'));
+            $this->line('  public url: '.($normalized ? (ShopMedia::url($normalized) ?? '—') : '—'));
+        }
+
+        $this->newLine();
         $this->line('PHP limits:');
         $uploadTmpDir = ini_get('upload_tmp_dir') ?: sys_get_temp_dir();
         $this->line('  upload_tmp_dir: '.$uploadTmpDir);
@@ -140,7 +162,8 @@ class DiagnoseUploads extends Command
         $this->comment('Check browser Network tab for POST /livewire/upload-file (419/413/500 = config or proxy issue).');
         $this->comment('If diagnose shows writable OK but uploads fail: artisan runs as root; PHP-FPM may be www-data. Run: chown -R www-data:www-data /data/livewire-tmp /data/products');
         $this->comment('After deploy, grep livewire.upload.incoming in laravel.log — if missing, the browser never reached Laravel.');
-        $this->comment('Behind Runflare/custom domain, APP_URL must be https://your-domain and assets must not load over http.');
+        $this->comment('If admin edit shows 500: grep "production.ERROR" storage/logs/laravel.log | tail -3');
+        $this->comment('After deploy run: php artisan config:clear && php artisan cache:clear && composer dump-autoload -o');
 
         return self::SUCCESS;
     }

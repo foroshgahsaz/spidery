@@ -1,6 +1,6 @@
 @extends('layouts.shop')
 
-@section('title', $author->name . ' | نویسندگان | ' . config('app.name'))
+@section('title', $author->name . ' | نویسندگان | ' . site_name())
 
 @section('content')
 <div class="max-w-site mx-auto px-4 md:px-6 py-6 md:py-10">

@@ -10,6 +10,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\ThumbnailController;
 use App\Livewire\Account\AccountDashboard;
 use App\Livewire\Account\AddressManager;
 use App\Livewire\Account\OrderList;
@@ -22,6 +23,10 @@ use App\Livewire\Auth\Register;
 use App\Livewire\Cart\CartPage;
 use App\Livewire\Checkout\CheckoutPage;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/thumb/{section}/{path}', ThumbnailController::class)
+    ->where('path', '.*')
+    ->name('shop.thumbnail');
 
 Route::get('/data/{path}', function (string $path) {
     $path = ltrim($path, '/');

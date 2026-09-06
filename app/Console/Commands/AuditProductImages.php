@@ -66,8 +66,9 @@ class AuditProductImages extends Command
 
         if ($missing > 0) {
             $this->newLine();
-            $this->comment('If alt_path_exists=yes, run: php artisan config:clear');
-            $this->comment('Then re-upload images. Old DB paths without files cannot be recovered automatically.');
+            $this->comment('Try: php artisan shop:repair-product-images --dry-run');
+            $this->comment('Then: php artisan shop:repair-product-images');
+            $this->comment('If files are gone everywhere, re-upload images in admin.');
         }
 
         return self::SUCCESS;

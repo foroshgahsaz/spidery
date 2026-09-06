@@ -20,11 +20,18 @@ class ImportExistingMedia extends Command
             : array_keys(config('media-library.folders', []));
 
         $imported = 0;
+        $diskRoot = rtrim((string) config('filesystems.disks.public.root'), '/');
 
         foreach ($folders as $folder) {
             $folder = trim($folder, '/');
 
-            if ($folder === '' || ! $disk->exists($folder)) {
+            if ($folder === '') {
+                continue;
+            }
+
+            if (! $disk->exists($folder)) {
+                $this->warn("Folder missing on public disk: {$folder} ({$diskRoot}/{$folder})");
+
                 continue;
             }
 
@@ -32,6 +39,12 @@ class ImportExistingMedia extends Command
                 $registry->registerFromPath('public', $path);
                 $imported++;
             }
+        }
+
+        if ($imported === 0) {
+            $this->warn('No files found on public disk folders.');
+            $this->line('Run: php artisan shop:verify-storage');
+            $this->line('Run: php artisan shop:sync-public-storage');
         }
 
         $this->info("Registered {$imported} file(s) in media library.");

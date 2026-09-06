@@ -10,7 +10,7 @@
     $questionCount = (int) ($product->approved_questions_count ?? 0);
 @endphp
 
-@section('title', ($product->meta_title ?: $product->name) . ' | ' . config('app.name'))
+@section('title', ($product->meta_title ?: $product->name) . ' | ' . site_name())
 @section('body_class', 'product-page')
 
 @section('meta')

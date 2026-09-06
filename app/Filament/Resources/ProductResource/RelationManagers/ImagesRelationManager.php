@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use App\Filament\Support\AdminImageColumn;
+use App\Filament\Support\ShopMediaPicker;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -22,20 +23,8 @@ class ImagesRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\FileUpload::make('image')
-                ->label('تصویر')
-                ->image()
-                ->disk('public')
-                ->directory('products')
-                ->visibility('public')
-                ->maxSize(51200)
-                ->imagePreviewHeight('150')
-                ->required(fn (string $operation): bool => $operation === 'create')
-                ->helperText('تا پایان آپلود (نوار پیشرفت) صبر کنید، بعد ذخیره کنید. حداکثر ۵۰ مگابایت.')
-                ->validationMessages([
-                    'required' => 'انتخاب تصویر الزامی است.',
-                    'uploaded' => 'فایل آپلود نشد. دوباره انتخاب کنید و تا پایان آپلود صبر کنید.',
-                ]),
+            ShopMediaPicker::image('image', 'products', 'تصویر')
+                ->required(fn (string $operation): bool => $operation === 'create'),
             Forms\Components\TextInput::make('price')
                 ->label('قیمت این تصویر (تومان)')
                 ->numeric()

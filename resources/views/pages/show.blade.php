@@ -1,6 +1,6 @@
 @extends('layouts.shop')
 
-@section('title', $page->meta_title ?: $page->title)
+@section('title', ($page->meta_title ?: $page->title) . ' | ' . site_name())
 
 @section('meta')
     <x-seo-meta :seo="\App\Support\SeoPresenter::for($page, ['type' => 'article'])" />
