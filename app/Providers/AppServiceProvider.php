@@ -36,6 +36,8 @@ use App\Services\Media\MediaRegistry;
 use App\Services\Settings\SettingsService;
 use App\Services\Sms\KavenegarSmsSender;
 use App\Services\Sms\LogSmsSender;
+use App\Support\MediaPath;
+use App\Support\ShopMedia;
 use App\Support\StoragePermissionFixer;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -53,6 +55,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Features\SupportFileUploads\FileUploadController;
+use League\Flysystem\UnableToCheckFileExistence;
+use League\Flysystem\UnableToRetrieveMetadata;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class AppServiceProvider extends ServiceProvider
@@ -209,24 +213,55 @@ class AppServiceProvider extends ServiceProvider
                     'uploaded' => 'فایل آپلود نشد. دوباره انتخاب کنید و تا پایان آپلود صبر کنید.',
                 ])
                 ->getUploadedFileUsing(function (FileUpload $component, string $file, string|array|null $storedFileNames): ?array {
+                    $file = MediaPath::normalize($file) ?? ltrim(str_replace('\\', '/', $file), '/');
                     $storage = $component->getDisk();
+                    $name = ($component->isMultiple() ? ($storedFileNames[$file] ?? null) : $storedFileNames) ?? basename($file);
 
-                    if (! $storage->exists($file)) {
-                        return null;
+                    try {
+                        $exists = $storage->exists($file);
+                    } catch (UnableToCheckFileExistence) {
+                        $exists = false;
                     }
 
                     $url = $component->getVisibility() === 'private'
                         ? rescue(fn () => $storage->temporaryUrl($file, now()->addMinutes(5)), report: false)
                         : null;
 
-                    $url ??= $storage->url($file);
+                    $url ??= rescue(fn () => $storage->url($file), report: false) ?? ShopMedia::url($file);
 
-                    return [
-                        'name' => ($component->isMultiple() ? ($storedFileNames[$file] ?? null) : $storedFileNames) ?? basename($file),
-                        'size' => $storage->size($file),
-                        'type' => $storage->mimeType($file),
-                        'url' => $url,
-                    ];
+                    if (! $exists) {
+                        return $url ? [
+                            'name' => $name,
+                            'size' => 0,
+                            'type' => null,
+                            'url' => $url,
+                        ] : null;
+                    }
+
+                    if (! $component->shouldFetchFileInformation()) {
+                        return [
+                            'name' => $name,
+                            'size' => 0,
+                            'type' => null,
+                            'url' => $url,
+                        ];
+                    }
+
+                    try {
+                        return [
+                            'name' => $name,
+                            'size' => (int) $storage->size($file),
+                            'type' => $storage->mimeType($file),
+                            'url' => $url,
+                        ];
+                    } catch (UnableToRetrieveMetadata) {
+                        return [
+                            'name' => $name,
+                            'size' => 0,
+                            'type' => null,
+                            'url' => $url,
+                        ];
+                    }
                 })
                 ->saveUploadedFileUsing(function (TemporaryUploadedFile $file) use ($component): ?string {
                     $disk = $component->getDiskName();
@@ -277,9 +312,9 @@ class AppServiceProvider extends ServiceProvider
                     return;
                 }
 
-                $path = $record->getAttribute($component->getName());
+                $path = MediaPath::normalize($record->getAttribute($component->getName()));
 
-                if (! is_string($path) || $path === '') {
+                if ($path === null) {
                     return;
                 }
 

@@ -4,6 +4,7 @@ namespace App\Services\Media;
 
 use App\Models\MediaFile;
 use App\Models\MediaUsage;
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,7 @@ class MediaRegistry
         ?string $originalName = null,
         ?int $uploadedBy = null,
     ): MediaFile {
-        $path = ltrim(str_replace('\\', '/', $path), '/');
+        $path = MediaPath::normalize($path) ?? ltrim(str_replace('\\', '/', $path), '/');
         $folder = trim(str_replace('\\', '/', dirname($path)), '/.');
         $folder = $folder === '.' ? 'uploads' : $folder;
 
@@ -32,7 +33,9 @@ class MediaRegistry
                 'path' => $path,
                 'folder' => $folder,
                 'mime_type' => is_file($absolutePath) ? (string) (@mime_content_type($absolutePath) ?: null) : null,
-                'size' => $storage->exists($path) ? (int) $storage->size($path) : 0,
+                'size' => $storage->exists($path)
+                    ? (int) (rescue(fn () => $storage->size($path), 0, false) ?? 0)
+                    : 0,
                 'width' => is_array($dimensions) ? (int) ($dimensions[0] ?? 0) ?: null : null,
                 'height' => is_array($dimensions) ? (int) ($dimensions[1] ?? 0) ?: null : null,
                 'original_name' => $originalName,
