@@ -83,7 +83,14 @@ class VerifyStorage extends Command
                     $this->line('Then: php artisan shop:import-existing-media');
                 }
             } elseif ($legacyCount > 0 && $publicCount > 0) {
-                $this->comment('Both legacy and public disk have files. Run shop:restore-public-files for DB paths missing on /data.');
+                if ($publicCount >= (int) $legacyCount) {
+                    $this->info('Public disk OK — /data has files (legacy copies can be ignored).');
+                    $this->comment('Run shop:restore-public-files only if specific product images are still missing on the site.');
+                } else {
+                    $this->comment('Public disk has fewer files than legacy. Run: php artisan shop:restore-public-files');
+                }
+            } elseif ($publicCount > 0) {
+                $this->info('Public disk OK — persistent /data volume is working on this pod.');
             }
         }
 
@@ -91,6 +98,9 @@ class VerifyStorage extends Command
             $this->newLine();
             $this->warn('After each deploy, /data is wiped unless it is a shared persistent volume on Runflare.');
             $this->warn('Mount the SAME volume to /data on every pod, then: shop:sync-public-storage');
+        } elseif ($publicRoot === '/data' && (int) $this->countPath('/data') > 0) {
+            $this->newLine();
+            $this->info('Persistent /data volume looks healthy — uploads should survive deploys.');
         }
 
         return self::SUCCESS;

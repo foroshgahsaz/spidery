@@ -13,17 +13,16 @@ use Tests\TestCase;
 
 class ShopImageUploadFieldTest extends TestCase
 {
-    public function test_shop_media_picker_renders_visible_choose_button(): void
+    public function test_shop_media_picker_renders_media_center_button(): void
     {
         $html = Livewire::test(ShopImageUploadFormStub::class)->html();
 
-        $this->assertStringContainsString('shop-image-upload', $html);
-        $this->assertStringContainsString('انتخاب فایل', $html);
-        $this->assertStringContainsString('type="file"', $html);
-        $this->assertStringContainsString('$wire.upload', $html);
+        $this->assertStringContainsString('media-picker-field', $html);
+        $this->assertStringContainsString('انتخاب / تغییر تصویر', $html);
+        $this->assertStringContainsString('openMediaCenter', $html);
     }
 
-    public function test_shop_icon_upload_uses_the_same_native_view(): void
+    public function test_shop_icon_upload_uses_native_upload_view(): void
     {
         $this->assertSame(
             'filament.forms.components.shop-image-upload',

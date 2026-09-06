@@ -66,6 +66,13 @@
 
                 if (file.size > this.maxSizeKb * 1024) {
                     this.error = 'حجم فایل بیش از حد مجاز است.'
+                    if (window.shopAdminAlert) {
+                        window.shopAdminAlert({
+                            title: 'حجم فایل زیاد است',
+                            body: 'فایل انتخابی بیش از حد مجاز است.',
+                            status: 'warning',
+                        })
+                    }
                     return
                 }
 
@@ -83,12 +90,22 @@
                     () => {
                         this.uploading = false
                         this.progress = 100
+                        if (window.shopAdminToast) {
+                            window.shopAdminToast('آپلود تصویر', 'success', 'فایل با موفقیت آپلود شد. برای ثبت نهایی دکمه ذخیره را بزنید.')
+                        }
                     },
                     () => {
                         this.uploading = false
                         this.progress = 0
                         this.localPreview = null
                         this.error = 'فایل آپلود نشد. دوباره انتخاب کنید و تا پایان نوار پیشرفت صبر کنید.'
+                        if (window.shopAdminAlert) {
+                            window.shopAdminAlert({
+                                title: 'خطا در آپلود',
+                                body: this.error,
+                                status: 'danger',
+                            })
+                        }
                     },
                     (progressEvent) => {
                         this.progress = progressEvent.detail.progress ?? 0
@@ -102,6 +119,9 @@
                 this.progress = 0
                 this.uploading = false
                 this.error = null
+                if (window.shopAdminToast) {
+                    window.shopAdminToast('حذف تصویر', 'info', 'تصویر از فرم حذف شد. برای ثبت نهایی دکمه ذخیره را بزنید.')
+                }
             },
         }"
     >

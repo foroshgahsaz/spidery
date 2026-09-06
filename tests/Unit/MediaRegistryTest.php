@@ -63,4 +63,52 @@ class MediaRegistryTest extends TestCase
 
         $this->assertDatabaseHas('media_files', ['id' => $mediaId]);
     }
+
+    public function test_update_seo_persists_alt_and_title(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('avatars/seo.webp', 'binary');
+
+        $registry = app(MediaRegistry::class);
+        $registry->registerFromPath('public', 'avatars/seo.webp', 'seo.webp');
+        $registry->updateSeo('public', 'avatars/seo.webp', 'Avatar alt', 'Avatar title');
+
+        $media = MediaFile::query()->where('path', 'avatars/seo.webp')->first();
+
+        $this->assertNotNull($media);
+        $this->assertSame('Avatar alt', $media->alt_text);
+        $this->assertSame('Avatar title', $media->title);
+    }
+
+    public function test_delete_path_removes_file_and_record(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('avatars/remove.webp', 'binary');
+
+        $registry = app(MediaRegistry::class);
+        $registry->registerFromPath('public', 'avatars/remove.webp', 'remove.webp');
+        $registry->deletePath('avatars/remove.webp');
+
+        $this->assertFalse(Storage::disk('public')->exists('avatars/remove.webp'));
+        $this->assertDatabaseMissing('media_files', ['path' => 'avatars/remove.webp']);
+    }
+
+    public function test_delete_path_blocks_when_in_use(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('sliders/in-use.webp', 'binary');
+
+        $registry = app(MediaRegistry::class);
+        $registry->registerFromPath('public', 'sliders/in-use.webp', 'in-use.webp');
+
+        HomeSlider::query()->create([
+            'title' => 'Test',
+            'image' => 'sliders/in-use.webp',
+            'position' => 0,
+            'is_active' => true,
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $registry->deletePath('sliders/in-use.webp');
+    }
 }

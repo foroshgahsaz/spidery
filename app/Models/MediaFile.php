@@ -20,6 +20,8 @@ class MediaFile extends Model
         'width',
         'height',
         'original_name',
+        'alt_text',
+        'title',
         'uploaded_by',
     ];
 

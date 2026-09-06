@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\SmsSender;
+use App\Filament\Support\CrudErrorNotification;
 use App\Filament\Support\CrudSuccessNotification;
 use App\Filament\Support\FileUploadSanitizer;
 use App\Filament\Support\MissingUploadPathCleaner;
@@ -146,6 +147,7 @@ class AppServiceProvider extends ServiceProvider
             $action
                 ->label('افزودن')
                 ->successNotification(CrudSuccessNotification::created())
+                ->failureNotification(CrudErrorNotification::failed())
                 ->beforeFormValidated(function ($action): void {
                     self::sanitizeMountedActionUploads($action);
                 });
@@ -154,6 +156,7 @@ class AppServiceProvider extends ServiceProvider
             $action
                 ->label('ویرایش')
                 ->successNotification(CrudSuccessNotification::saved())
+                ->failureNotification(CrudErrorNotification::failed())
                 ->mutateRecordDataUsing(function (array $data, \Filament\Tables\Actions\EditAction $action): array {
                     $record = $action->getRecord();
 
@@ -168,18 +171,21 @@ class AppServiceProvider extends ServiceProvider
         \Filament\Tables\Actions\DeleteAction::configureUsing(function ($action): void {
             $action
                 ->label('حذف')
-                ->successNotification(CrudSuccessNotification::deleted());
+                ->successNotification(CrudSuccessNotification::deleted())
+                ->failureNotification(CrudErrorNotification::failed());
         });
         ViewAction::configureUsing(fn ($action) => $action->label('مشاهده'));
         DeleteBulkAction::configureUsing(function ($action): void {
             $action
                 ->label('حذف انتخاب‌شده‌ها')
-                ->successNotification(CrudSuccessNotification::deleted());
+                ->successNotification(CrudSuccessNotification::deleted())
+                ->failureNotification(CrudErrorNotification::failed());
         });
         CreateAction::configureUsing(function ($action): void {
             $action
                 ->label('افزودن')
                 ->successNotification(CrudSuccessNotification::created())
+                ->failureNotification(CrudErrorNotification::failed())
                 ->beforeFormValidated(function ($action): void {
                     self::sanitizeMountedActionUploads($action);
                 });
@@ -188,6 +194,7 @@ class AppServiceProvider extends ServiceProvider
             $action
                 ->label('ویرایش')
                 ->successNotification(CrudSuccessNotification::saved())
+                ->failureNotification(CrudErrorNotification::failed())
                 ->mutateRecordDataUsing(function (array $data, EditAction $action): array {
                     $record = $action->getRecord();
 
@@ -202,7 +209,8 @@ class AppServiceProvider extends ServiceProvider
         DeleteAction::configureUsing(function ($action): void {
             $action
                 ->label('حذف')
-                ->successNotification(CrudSuccessNotification::deleted());
+                ->successNotification(CrudSuccessNotification::deleted())
+                ->failureNotification(CrudErrorNotification::failed());
         });
 
         FileUpload::configureUsing(function (FileUpload $component): void {

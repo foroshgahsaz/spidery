@@ -32,7 +32,57 @@ class UserResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('اطلاعات کاربر')
+            Forms\Components\Section::make('پروفایل')
+                ->description('تصویر، نام و معرفی کاربر')
+                ->icon('heroicon-o-user-circle')
+                ->schema([
+                    Forms\Components\Grid::make()
+                        ->schema([
+                            ShopMediaPicker::image('avatar', 'avatars', 'تصویر پروفایل')
+                                ->columnSpan(['default' => 12, 'lg' => 4]),
+                            Forms\Components\Group::make()
+                                ->schema([
+                                    Forms\Components\TextInput::make('name')
+                                        ->label('نام و نام خانوادگی')
+                                        ->required()
+                                        ->maxLength(255),
+                                    Forms\Components\Textarea::make('bio')
+                                        ->label('بیوگرافی / معرفی کوتاه')
+                                        ->rows(3)
+                                        ->maxLength(500)
+                                        ->placeholder('برای نویسندگان و پروفایل عمومی نمایش داده می‌شود.'),
+                                ])
+                                ->columnSpan(['default' => 12, 'lg' => 8]),
+                        ])
+                        ->columns(12),
+                ]),
+            Forms\Components\Section::make('اطلاعات حساب')
+                ->description('راه‌های ارتباطی و ورود')
+                ->icon('heroicon-o-identification')
+                ->schema([
+                    Forms\Components\TextInput::make('phone')
+                        ->label('موبایل')
+                        ->required()
+                        ->unique(ignoreRecord: true),
+                    Forms\Components\TextInput::make('email')
+                        ->label('ایمیل')
+                        ->email()
+                        ->unique(ignoreRecord: true),
+                    Forms\Components\TextInput::make('password')
+                        ->label('رمز عبور')
+                        ->password()
+                        ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
+                        ->dehydrated(fn ($state) => filled($state))
+                        ->required(fn (string $operation) => $operation === 'create')
+                        ->helperText('در ویرایش، فقط در صورت تغییر رمز پر کنید.'),
+                    Forms\Components\Toggle::make('status')
+                        ->label('حساب فعال')
+                        ->default(true),
+                ])
+                ->columns(2),
+            Forms\Components\Section::make('نوع کاربر و دسترسی')
+                ->description('مشتری یا نقش‌های سازمانی')
+                ->icon('heroicon-o-shield-check')
                 ->schema([
                     Forms\Components\Select::make('user_kind')
                         ->label('نوع کاربر')
@@ -53,18 +103,8 @@ class UserResource extends Resource
                         ])
                         ->columns(2)
                         ->visible(fn (Get $get): bool => $get('user_kind') === 'staff'),
-                    Forms\Components\TextInput::make('name')->label('نام')->required(),
-                    Forms\Components\TextInput::make('phone')->label('موبایل')->required()->unique(ignoreRecord: true),
-                    Forms\Components\TextInput::make('email')->label('ایمیل')->email()->unique(ignoreRecord: true),
-                    ShopMediaPicker::image('avatar', 'avatars', 'تصویر پروفایل'),
-                    Forms\Components\TextInput::make('password')
-                        ->label('رمز عبور')
-                        ->password()
-                        ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
-                        ->dehydrated(fn ($state) => filled($state))
-                        ->required(fn (string $operation) => $operation === 'create'),
-                    Forms\Components\Toggle::make('status')->label('فعال')->default(true),
-                ])->columns(2),
+                ])
+                ->columns(1),
         ]);
     }
 
